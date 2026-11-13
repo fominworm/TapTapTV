@@ -1,0 +1,49 @@
+name: Build TapTap TV APK
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - project.zip
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Unzip project.zip
+        run: |
+          mkdir -p work
+          unzip -q project.zip -d work
+          GRADLEW=$(find work -maxdepth 3 -name gradlew | head -n 1)
+          test -n "$GRADLEW" || { echo "gradlew not found in project.zip"; exit 1; }
+          echo "PROJECT_DIR=$(dirname "$GRADLEW")" >> "$GITHUB_ENV"
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+
+      - uses: gradle/actions/setup-gradle@v4
+
+      - name: Accept Android licenses
+        run: yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" --licenses > /dev/null || true
+
+      - name: Build debug APK
+        working-directory: ${{ env.PROJECT_DIR }}
+        run: |
+          chmod +x gradlew
+          ./gradlew :app:assembleFullDebug --stacktrace
+
+      - name: Collect APK
+        run: |
+          mkdir -p out
+          find "$PROJECT_DIR/app/build/outputs/apk" -name "*.apk" -exec cp {} out/ \;
+          ls -la out
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: TapTap-TV-apk
+          path: out/*.apk
