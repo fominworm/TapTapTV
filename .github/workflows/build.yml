@@ -20,6 +20,13 @@ jobs:
           test -n "$GRADLEW" || { echo "gradlew not found in project.zip"; exit 1; }
           echo "PROJECT_DIR=$(dirname "$GRADLEW")" >> "$GITHUB_ENV"
 
+      - name: Fetch launcher submodule (third_party/cleanyourtv)
+        run: |
+          rm -rf "$PROJECT_DIR/third_party/cleanyourtv"
+          git clone https://github.com/Gathin23/cleanyourtv.git "$PROJECT_DIR/third_party/cleanyourtv"
+          git -C "$PROJECT_DIR/third_party/cleanyourtv" checkout b06ab21
+          ls "$PROJECT_DIR/third_party/cleanyourtv"
+
       - uses: actions/setup-java@v4
         with:
           distribution: temurin
