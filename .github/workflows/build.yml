@@ -41,7 +41,10 @@ jobs:
         working-directory: ${{ env.PROJECT_DIR }}
         run: |
           chmod +x gradlew
-          ./gradlew :app:assembleFullDebug --stacktrace
+          ./gradlew :app:assembleFullDebug --console=plain 2>&1 | tee build.log || true
+          echo "=========== ОШИБКИ ==========="
+          grep -n -A12 "What went wrong\|^e: \|FAILURE" build.log | head -60
+          test -n "$(find app/build/outputs/apk -name '*.apk' 2>/dev/null)"
 
       - name: Collect APK
         run: |
