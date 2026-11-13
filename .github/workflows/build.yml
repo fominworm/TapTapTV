@@ -3,8 +3,7 @@ name: Build TapTap TV APK
 on:
   workflow_dispatch:
   push:
-    paths:
-      - project.zip
+    branches: [main]
 
 jobs:
   build:
